@@ -1,6 +1,12 @@
 use std::process::Command;
+use std::env;
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    println!("{:?}", args);
+    // cargo run -- test=hola
+
     let gitstatus = Command::new("git")
         .arg("-C")
         .arg("./test-brick")
