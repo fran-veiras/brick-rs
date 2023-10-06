@@ -1,0 +1,4 @@
+{
+  "pm": "pnpm",
+  "jobs": ["test"]
+}

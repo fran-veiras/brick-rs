@@ -1,0 +1,10 @@
+# Incluir solo el binario deseado
+!target/debug/brick
+
+# Ignorar todo lo demás
+*
+
+# Excepto algunos archivos y directorios específicos si es necesario
+!.npmignore
+!LICENSE
+!README.md
