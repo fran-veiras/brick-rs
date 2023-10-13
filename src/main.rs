@@ -1,5 +1,4 @@
 use std::process::Command;
-use std::env;
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 use std::fs;
@@ -12,9 +11,7 @@ struct Configfile {
 }
 
 fn main() -> Result<()> {
-    let args: Vec<String> = env::args().collect();
-
-    // cargo run -- test=hola
+    // let args: Vec<String> = env::args().collect();
 
     let gitstatus = Command::new("git")
         .arg("-C")
