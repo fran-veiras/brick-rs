@@ -5,8 +5,9 @@ use serde_json::Result;
 use std::fs;
 
 #[derive(Serialize, Deserialize)]
-struct Config_file {
+struct Configfile {
     pm: String,
+    root: String,
     jobs: Vec<String>,
 }
 
@@ -37,20 +38,64 @@ fn ci_brick (gitstatus : std::process::Output) -> Result<()> {
     
     let contents = fs::read_to_string("./brick.config.json")
         .expect("Should have been able to read the file");
-    let p:Config_file = serde_json::from_str(&contents)?;
-
-    println!("hello, {:?}", p.pm);
-
-    for file in untracked_files {
-        // println!("Untracked {}", file);
-    }
+    let config_file:Configfile = serde_json::from_str(&contents)?;
 
 
-    for file in not_staged_files {
-        // println!("Not staged {}", file);
+    let available_files = untracked_files
+        .iter()
+        .filter(|x| x.contains(&format!("/{}/", config_file.root)))
+        .chain(
+            not_staged_files
+                .iter()
+                .filter(|x| x.contains(&format!("/{}/", config_file.root))).collect::<Vec<&&str>>()
+        ).map(|x| {
+            let file = x.strip_prefix("modified: ").unwrap_or(x).trim_start();
+            
+            extract_folder_to_run(file, &config_file)
+        })
+        .collect::<Vec<String>>();
+    
+
+    for file in available_files {
+        let job = Command::new(&config_file.pm)
+            .arg(&config_file.jobs[0])
+            .arg(file)
+            .output()
+            .expect("something is wrong!");
+
+
+            println!("Status: {}", job.status);
+            println!("Stdout: {}", String::from_utf8_lossy(&job.stdout));
+            println!("Stderr: {}", String::from_utf8_lossy(&job.stderr));
     }
 
     Ok(())
+}
+
+fn extract_folder_to_run(x : &str, config_file: &Configfile) -> String {
+    let directories = x.split("/");
+
+    let mut is_root = false;
+    let mut folder : String = String::new();
+
+    for part in directories {
+        if part == config_file.root { 
+            folder.push_str(&format!("{}/", part));
+            is_root = true;
+            continue
+        }
+
+        if is_root == true {
+            folder.push_str(&format!("{}/", part));
+            break;
+        } 
+
+
+        folder.push_str(&format!("{}/", part));
+    };
+
+
+    folder
 }
 
 fn extract_not_staged(output: &str) -> Vec<&str> {
