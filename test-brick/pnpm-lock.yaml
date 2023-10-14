@@ -17,9 +17,6 @@ dependencies:
   autoprefixer:
     specifier: 10.4.15
     version: 10.4.15(postcss@8.4.28)
-  brick-rs:
-    specifier: 0.0.1-test
-    version: 0.0.1-test
   eslint:
     specifier: 8.47.0
     version: 8.47.0
@@ -61,6 +58,9 @@ devDependencies:
   babel-jest:
     specifier: ^29.6.4
     version: 29.7.0(@babel/core@7.23.0)
+  brick-rs:
+    specifier: 0.0.14-test
+    version: 0.0.14-test
   cypress:
     specifier: ^13.3.1
     version: 13.3.1
@@ -2393,10 +2393,11 @@ packages:
     dependencies:
       fill-range: 7.0.1
 
-  /brick-rs@0.0.1-test:
-    resolution: {integrity: sha512-NNmxZcnjLVdkXVYcWhVaMTlXZTxU7jUBvs7gxAq1IH7yaO4SmyTMwjjg4ogIuu+KWB94QaAPOKPApR4e9cgKtA==}
+  /brick-rs@0.0.14-test:
+    resolution: {integrity: sha512-1vFUkqmbnYw9IPeMNKk8uzQmpmtVCsN5i1p3nsT6eyR/lwVAdQPYFs/+n/FDgGU6KNzLGFIdkY8BoGQOe35ibA==}
     hasBin: true
-    dev: false
+    requiresBuild: true
+    dev: true
 
   /browserslist@4.21.11:
     resolution: {integrity: sha512-xn1UXOKUz7DjdGlg9RrUr0GGiWzI97UQJnugHtH0OLDfJB7jMgoIkYvRIEO1l9EeEERVqeqLYOcFBW9ldjypbQ==}

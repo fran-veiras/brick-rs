@@ -1,17 +1,17 @@
 {
-  "name": "brick-rs",
-  "version": "0.0.1-test",
-  "description": "Descripción de mi aplicación",
-  "bin": {
-    "brickrs": "target/debug/brick"
-  },
-  "scripts": {
-    "brick": "target/debug/brick"
-  },
-  "keywords": [
-    "rust",
-    "npm"
-  ],
-  "license": "MIT"
+	"name": "brick-rs",
+	"version": "0.0.14-test",
+	"description": "Descripción de mi aplicación",
+	"bin": {
+		"brickrs": "target/debug/brick"
+	},
+	"scripts": {
+		"postinstall": "chmod +x ./postinstall.sh && ./postinstall.sh",
+		"brick": "target/debug/brick"
+	},
+	"keywords": [
+		"rust",
+		"npm"
+	],
+	"license": "MIT"
 }
-

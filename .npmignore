@@ -7,3 +7,5 @@
 !.npmignore
 !LICENSE
 !README.md
+
+!postinstall.sh
