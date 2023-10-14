@@ -1,6 +1,6 @@
 # brick-rs
 
-La finalidad de este binary es correr jobs sobre rutas que fueron modificadas,para evitar grandes cargas y tiempo de espera. Por ahora solo funciona con cypress e2e y jest
+La finalidad de este binary es correr jobs sobre rutas que fueron modificadas, para evitar grandes cargas y tiempo de espera. Por ahora solo funciona con cypress e2e y jest
 
 ![Untitled-2023-09-19-1214(1)(1)](https://github.com/fran-veiras/brick-rs/assets/74626997/3718278f-c240-4848-9f7b-119b865e553a)
 
