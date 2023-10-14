@@ -61,15 +61,15 @@ brick.config.json
 ```css
 📁 cypress
 	📁 e2e
-		📁 home
-    📁 about
+            📁 home
+            📁 about
 📁 src
   📁 components **(root)**
     📁 home
-      📄 index.ts **x** **(modified)**
+	📄 index.ts **x** **(modified)**
       📁 __tests__
-					📄 index.test.ts
-	  📁 about
+	📄 index.test.ts
+	📁 about
 ```
 
 `jobs` Los trabajos que queremos ejecutar sobre esos directorios con cambios
