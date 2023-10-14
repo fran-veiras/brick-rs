@@ -11,7 +11,7 @@ La finalidad de este binary es correr jobs sobre rutas que fueron modificadas, p
 
 `yarn add -D brick-rs` 
 
-`npm i brick-rs —dev`
+`npm i --save-dev brick-rs`
 
 `pnpm add -D brick-rs`
 
