@@ -1,5 +1,5 @@
 {
 	"pm": "pnpm",
-	"root": "utils",
-	"jobs": ["test"]
+	"root": "components",
+	"jobs": ["jest", "cypress"]
 }

@@ -52,6 +52,9 @@ devDependencies:
   '@babel/preset-typescript':
     specifier: ^7.22.11
     version: 7.23.0(@babel/core@7.23.0)
+  '@jest/globals':
+    specifier: ^29.7.0
+    version: 29.7.0
   '@types/jest':
     specifier: ^29.5.5
     version: 29.5.5

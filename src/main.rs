@@ -2,6 +2,9 @@ use std::process::Command;
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 use std::fs;
+mod utils;
+use utils::relevant_output::relevant_output;
+use utils::loader::loader;
 
 #[derive(Serialize, Deserialize)]
 struct Configfile {
@@ -32,6 +35,7 @@ fn ci_brick (gitstatus : std::process::Output) -> Result<()> {
     let stdout = String::from_utf8_lossy(&gitstatus.stdout);
     let untracked_files = extract_untracked_files(&stdout);
     let not_staged_files = extract_not_staged(&stdout);
+    let mut package_changed = Vec::new();
     
     let contents = fs::read_to_string("./brick.config.json")
         .expect("Should have been able to read the file");
@@ -46,36 +50,84 @@ fn ci_brick (gitstatus : std::process::Output) -> Result<()> {
                 .iter()
                 .filter(|x| x.contains(&format!("/{}/", config_file.root))).collect::<Vec<&&str>>()
         ).map(|x| {
-            let file = x.strip_prefix("modified: ").unwrap_or(x).trim_start();
-            
-            extract_folder_to_run(file, &config_file)
-        })
-        .collect::<Vec<String>>();
-    
+            let prefixes = ["modified: ", "deleted: "];
+            let file = prefixes
+                .iter()
+                .fold(x.to_string(), |acc, &prefix| {
+                    acc.strip_prefix(prefix).unwrap_or(&acc).to_string()
+                })
+                .trim_start()
+                .to_string();
+
+            file
+        }).collect::<Vec<String>>();
+
+
+    let mut directories_to_run : Vec<String> = Vec::new();
 
     for file in available_files {
-        let job = Command::new(&config_file.pm)
-            .arg(&config_file.jobs[0])
-            .arg(file)
-            .output()
-            .expect("something is wrong!");
+        let (folder, p_changed) = extract_folder_to_run(&file, &config_file);
 
+        if !package_changed.contains(&format!("{}", p_changed)) {
+            package_changed.push(format!("{}", p_changed));
+        }
 
-            println!("Status: {}", job.status);
-            println!("Stdout: {}", String::from_utf8_lossy(&job.stdout));
-            println!("Stderr: {}", String::from_utf8_lossy(&job.stderr));
+        if !directories_to_run.contains(&folder) {
+            directories_to_run.push(folder)
+        }
     }
+
+
+    config_file.jobs.iter().for_each(|job| match job.as_str() {
+        "cypress" => {
+
+            package_changed.iter().for_each(|package| {    
+                let _loader = loader(job, package);
+                
+                let job : std::process::Output = Command::new("npx")
+                    .arg("cypress")
+                    .arg("run")
+                    .arg("--spec")
+                    .arg(format!("cypress/e2e/{}/*", package))
+                    .output()
+                    .expect("Failed to execute cypress");
+
+
+                relevant_output(job, "(Run Finished)");
+            });
+
+        },
+        _ => {
+            for file in &directories_to_run {
+                let _loader = loader(job, file);
+
+                let job = Command::new(&config_file.pm)
+                    .arg(job)
+                    .arg("--colors")
+                    .arg(&file)
+                    .output()
+                    .expect("something is wrong!");
+
+
+                
+                println!("{}", String::from_utf8_lossy(&job.stdout));
+                println!("{}", String::from_utf8_lossy(&job.stderr));
+                println!("Status: {}", job.status);
+            }
+        }
+    });
 
     Ok(())
 }
 
-fn extract_folder_to_run(x : &str, config_file: &Configfile) -> String {
-    let directories = x.split("/");
+fn extract_folder_to_run(x : &str, config_file: &Configfile) -> (String, String) {
+    let split_directories = x.split("/");
 
     let mut is_root = false;
     let mut folder : String = String::new();
+    let mut package_changed : String = String::new();
 
-    for part in directories {
+    for part in split_directories {
         if part == config_file.root { 
             folder.push_str(&format!("{}/", part));
             is_root = true;
@@ -84,6 +136,7 @@ fn extract_folder_to_run(x : &str, config_file: &Configfile) -> String {
 
         if is_root == true {
             folder.push_str(&format!("{}/", part));
+            package_changed.push_str(&format!("{}/", part));
             break;
         } 
 
@@ -92,7 +145,7 @@ fn extract_folder_to_run(x : &str, config_file: &Configfile) -> String {
     };
 
 
-    folder
+    (folder, package_changed)
 }
 
 fn extract_not_staged(output: &str) -> Vec<&str> {
