@@ -1,13 +1,9 @@
 {
 	"name": "brick-rs",
-	"version": "0.0.14-test",
+	"version": "0.0.11",
 	"description": "Descripción de mi aplicación",
 	"bin": {
 		"brickrs": "target/debug/brick"
-	},
-	"scripts": {
-		"postinstall": "chmod +x ./postinstall.sh && ./postinstall.sh",
-		"brick": "target/debug/brick"
 	},
 	"keywords": [
 		"rust",

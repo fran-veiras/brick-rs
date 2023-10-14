@@ -59,8 +59,8 @@ devDependencies:
     specifier: ^29.6.4
     version: 29.7.0(@babel/core@7.23.0)
   brick-rs:
-    specifier: 0.0.14-test
-    version: 0.0.14-test
+    specifier: 0.0.27-test
+    version: 0.0.27-test
   cypress:
     specifier: ^13.3.1
     version: 13.3.1
@@ -2393,10 +2393,9 @@ packages:
     dependencies:
       fill-range: 7.0.1
 
-  /brick-rs@0.0.14-test:
-    resolution: {integrity: sha512-1vFUkqmbnYw9IPeMNKk8uzQmpmtVCsN5i1p3nsT6eyR/lwVAdQPYFs/+n/FDgGU6KNzLGFIdkY8BoGQOe35ibA==}
+  /brick-rs@0.0.27-test:
+    resolution: {integrity: sha512-BTROy/tF3ubp6ChGp1ngUvCvPqhjACLekPUMLFd2X3OVzvlFZoR56e9ab6QeI5n/C4gjMm1L/lGnjf06lvk4Zw==}
     hasBin: true
-    requiresBuild: true
     dev: true
 
   /browserslist@4.21.11:
