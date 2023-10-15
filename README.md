@@ -1,25 +1,30 @@
-# brick-rs
+<h1 align="center">Brick-rs</h1>
 
-La finalidad de este binary es correr jobs sobre rutas que fueron modificadas, para evitar grandes cargas y tiempo de espera. Por ahora solo funciona con cypress e2e y jest
+<p align="center">
+  <a aria-label="NPM version" href="https://www.npmjs.com/package/brick-rs" style="margin-right: 20px;">Npm</a>
+  <a aria-label="Creator" href="https://twitter.com/fveiras_">Creator</a>
+</p>
+
+## What is Brick?
+
+> **​Brick is under active development.** The purpose of this binary is to run jobs on modified routes to avoid heavy loads and waiting times. Currently, it only works with Cypress e2e and Jest. watch the [GitHub repository](https://github.com/fran-veiras/brick-rs) to keep tabs on future releases.
 
 ![Untitled-2023-09-19-1214(1)(1)](https://github.com/fran-veiras/brick-rs/assets/74626997/3718278f-c240-4848-9f7b-119b865e553a)
 
+## Add to a New Project
 
-### Añadir a un nuevo proyecto
+### Install
 
-**Install**
+| Package Manager | Command                      |
+|------------------|------------------------------|
+| Yarn             | `yarn add -D brick-rs`      |
+| Npm              | `npm i --save-dev brick-rs`  |
+| Pnpm             | `pnpm add -D brick-rs`      |
 
-`yarn add -D brick-rs` 
 
-`npm i --save-dev brick-rs`
-
-`pnpm add -D brick-rs`
-
-**Config** 
-
-`pnpm` y `npm`
-
-package.json
+### Config
+#### For pnpm and npm Projects
+Add the following script to your **package.json** file:
 ```json
 {
 		"scripts": {
@@ -29,11 +34,9 @@ package.json
 }
 ```
 
-`yarn`
+#### For yarn Projects
+If the binary doesn't execute properly with Yarn projects, configure it manually in your **package.json**
 
-Por motivos que desconozco el binario no se ejecuta con proyectos de yarn, entonces lo configuramos manual
-
-package.json
 ```json
 {
 		"scripts": {
@@ -43,9 +46,9 @@ package.json
 }
 ```
 
-`brick.config.json`
+---
 
-brick.config.json
+### Create a brick.config.json file with the following content:
 ```json
 {
 		"pm": "pnpm",
@@ -54,9 +57,9 @@ brick.config.json
 }
 ```
 
-`pm` project package manager
+`pm` Project package manager
 
-`root` Es el punto de entrada donde queremos que el programa busque los cambios.
+`root` The entry point where the program looks for changes.
 
 ```css
 📁 cypress
@@ -72,12 +75,36 @@ brick.config.json
 	📁 about
 ```
 
-`jobs` Los trabajos que queremos ejecutar sobre esos directorios con cambios
+`jobs` The jobs to execute on the specified directories with changes.
 
-Los jobs se van a correr en este caso sobre la carpeta home (`components/home/*`) y a su vez si tenemos cypress va a buscar la carpeta con el mismo nombre `cypress/e2e/home` 
+In this case, the jobs will run on the home folder (components/home/*). If you have Cypress, it will look for the folder with the same name: `cypress/e2e/home`. It's crucial that they have matching names.
 
-Es importante que cuenten con el mismo nombre.
+**Note**: Ensure Cypress is properly configured, and the server is running, especially for e2e tests.
 
-Cypress
+## Finally
 
-Para ver el output de los test es necesario tenerlo bien configurado y corriendo el servidor si son e2e.
+To run the `brick` script after configuring your project, use the following command if you are using **pnpm** as your package manager:
+
+```bash
+pnpm run brick
+```
+
+![image](https://github.com/fran-veiras/brick-rs/assets/74626997/51f35e9b-e6ff-4dc5-b098-997f1a5e3c18)
+
+
+## Contributing
+
+After completing the development, you can test it locally on our front end by following these steps:
+
+1. Build the project and copy the binary to the test environment:
+
+`cargo build && ./copy_target.sh`
+
+This will copy the binary to our front-end testing environment /test-brick.
+
+2. Inside our testing environment /test-brick, run the following command to execute the binary. This allows us to avoid working with the entire package and only focus on running the binary, which is crucial.
+`pnpm run brick-build`
+
+This script enables us to execute the binary efficiently, simplifying the testing process.
+
+
