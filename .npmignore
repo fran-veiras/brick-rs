@@ -1,5 +1,6 @@
 # Incluir solo el binario deseado
 !target/debug/brick
+!README.md
 # Ignorar todo lo demás
 *
 

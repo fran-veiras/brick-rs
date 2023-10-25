@@ -1,10 +1,11 @@
-use std::process::Command;
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 use std::fs;
+use std::process::Command;
 mod utils;
-use utils::relevant_output::relevant_output;
 use utils::loader::loader;
+use utils::relevant_output::relevant_output;
+mod version_control;
 
 #[derive(Serialize, Deserialize)]
 struct Configfile {
@@ -14,8 +15,6 @@ struct Configfile {
 }
 
 fn main() -> Result<()> {
-    // let args: Vec<String> = env::args().collect();
-
     let gitstatus = Command::new("git")
         .arg("-C")
         .arg("./")
@@ -26,31 +25,27 @@ fn main() -> Result<()> {
     if gitstatus.status.success() {
         ci_brick(gitstatus)
     } else {
-        eprintln!("Error running git command:\n{}", String::from_utf8_lossy(&gitstatus.stderr));
+        eprintln!(
+            "Error running git command:\n{}",
+            String::from_utf8_lossy(&gitstatus.stderr)
+        );
         Ok(())
     }
 }
 
-fn ci_brick (gitstatus : std::process::Output) -> Result<()> {
+fn ci_brick(gitstatus: std::process::Output) -> Result<()> {
     let stdout = String::from_utf8_lossy(&gitstatus.stdout);
-    let untracked_files = extract_untracked_files(&stdout);
-    let not_staged_files = extract_not_staged(&stdout);
     let mut package_changed = Vec::new();
-    
-    let contents = fs::read_to_string("./brick.config.json")
-        .expect("Should have been able to read the file");
-    let config_file:Configfile = serde_json::from_str(&contents)?;
+    let directories_to_runv2 = version_control::directories_to_run::extract_directories(&stdout);
 
+    let contents = fs::read_to_string("./brick.config.json").expect("Brick config was not found");
+    let config_file: Configfile = serde_json::from_str(&contents)?;
 
-    let available_files = untracked_files
+    let available_files = directories_to_runv2
         .iter()
         .filter(|x| x.contains(&format!("/{}/", config_file.root)))
-        .chain(
-            not_staged_files
-                .iter()
-                .filter(|x| x.contains(&format!("/{}/", config_file.root))).collect::<Vec<&&str>>()
-        ).map(|x| {
-            let prefixes = ["modified: ", "deleted: "];
+        .map(|x| {
+            let prefixes = ["modified: ", "deleted: ", "new file: "];
             let file = prefixes
                 .iter()
                 .fold(x.to_string(), |acc, &prefix| {
@@ -60,10 +55,10 @@ fn ci_brick (gitstatus : std::process::Output) -> Result<()> {
                 .to_string();
 
             file
-        }).collect::<Vec<String>>();
+        })
+        .collect::<Vec<String>>();
 
-
-    let mut directories_to_run : Vec<String> = Vec::new();
+    let mut directories_to_run: Vec<String> = Vec::new();
 
     for file in available_files {
         let (folder, p_changed) = extract_folder_to_run(&file, &config_file);
@@ -77,14 +72,12 @@ fn ci_brick (gitstatus : std::process::Output) -> Result<()> {
         }
     }
 
-
     config_file.jobs.iter().for_each(|job| match job.as_str() {
         "cypress" => {
-
-            package_changed.iter().for_each(|package| {    
+            package_changed.iter().for_each(|package| {
                 let _loader = loader(job, package);
-                
-                let job : std::process::Output = Command::new("npx")
+
+                let job: std::process::Output = Command::new("npx")
                     .arg("cypress")
                     .arg("run")
                     .arg("--spec")
@@ -92,11 +85,9 @@ fn ci_brick (gitstatus : std::process::Output) -> Result<()> {
                     .output()
                     .expect("Failed to execute cypress");
 
-
                 relevant_output(job, "(Run Finished)");
             });
-
-        },
+        }
         _ => {
             for file in &directories_to_run {
                 let _loader = loader(job, file);
@@ -108,8 +99,6 @@ fn ci_brick (gitstatus : std::process::Output) -> Result<()> {
                     .output()
                     .expect("something is wrong!");
 
-
-                
                 println!("{}", String::from_utf8_lossy(&job.stdout));
                 println!("{}", String::from_utf8_lossy(&job.stderr));
                 println!("Status: {}", job.status);
@@ -120,74 +109,28 @@ fn ci_brick (gitstatus : std::process::Output) -> Result<()> {
     Ok(())
 }
 
-fn extract_folder_to_run(x : &str, config_file: &Configfile) -> (String, String) {
+fn extract_folder_to_run(x: &str, config_file: &Configfile) -> (String, String) {
     let split_directories = x.split("/");
 
     let mut is_root = false;
-    let mut folder : String = String::new();
-    let mut package_changed : String = String::new();
+    let mut folder: String = String::new();
+    let mut package_changed: String = String::new();
 
     for part in split_directories {
-        if part == config_file.root { 
+        if part == config_file.root {
             folder.push_str(&format!("{}/", part));
             is_root = true;
-            continue
+            continue;
         }
 
         if is_root == true {
             folder.push_str(&format!("{}/", part));
             package_changed.push_str(&format!("{}/", part));
             break;
-        } 
-
+        }
 
         folder.push_str(&format!("{}/", part));
-    };
-
+    }
 
     (folder, package_changed)
-}
-
-fn extract_not_staged(output: &str) -> Vec<&str> {
-    let mut not_staged_files = Vec::new();
-    let lines: Vec<&str> = output.lines().collect();
-    let mut in_not_staged_section = false;
-
-    for line in lines {
-        if line.starts_with("Changes not staged for commit:") {
-            in_not_staged_section = true;
-            continue;
-        } else if in_not_staged_section && line.is_empty() {
-            in_not_staged_section = false;
-            continue;
-        }
-        
-        if in_not_staged_section && line.starts_with('\t') {
-            not_staged_files.push(line.trim_start_matches('\t'));
-        }
-    }
-
-    not_staged_files
-}
-
-fn extract_untracked_files(output: &str) -> Vec<&str> {
-    let mut untracked_files = Vec::new();
-    let lines: Vec<&str> = output.lines().collect();
-    let mut in_untracked_section = false;
-
-    for line in lines {
-        if line.starts_with("Untracked files:") {
-            in_untracked_section = true;
-            continue;
-        } else if in_untracked_section && line.is_empty() {
-            in_untracked_section = false;
-            continue;
-        }
-        
-        if in_untracked_section && line.starts_with('\t') {
-            untracked_files.push(line.trim_start_matches('\t'));
-        }
-    }
-
-    untracked_files
 }
